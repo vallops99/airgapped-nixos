@@ -2,10 +2,10 @@
   description = "Airgapped NixOS";
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
   outputs = { self, nixpkgs }: {
-    nixosConfigurations.airgapped-iso = nixpkgs.lib.nixosSystem {
+    nixosConfigurations.exampleIso = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [
-        ({ pkgs, modulesPath, ... }: {
+        ({ pkgs, modulesPath, lib, ... }: {
           imports = [ (modulesPath + "/installer/cd-dvd/installation-cd-minimal.nix") ];
           environment.systemPackages = [ pkgs.sparrow ];
 
@@ -32,5 +32,8 @@
         })
       ];
     };
+
+    packages.x86_64-linux.iso = self.nixosConfigurations.airgapped-iso.config.system.build.isoImage;
+    defaultPackage.x86_64-linux = self.packages.x86_64-linux.iso;
   };
 }
