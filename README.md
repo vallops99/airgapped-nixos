@@ -1,10 +1,21 @@
-# Create a NixOS ISO #
-This is a very simple flake used to create an ISO image of NixOS with sparrow package already installed in it.   
+# Airgapped NixOS live #
+Very simple NixOS configuration to create an airgapped live USB.   
+My usecase: Sparrow wallet 
 
 ## How to use it ##
-Find the kernel modules you want to disable with: `lsmod | grep -E 'net|wlan|eth|blue|bt' | awk '{print $1}'`   
-Move the output to the blacklist.txt file.   
-Insert a USB stick into your pc.   
-Find the name of your stick with: `lsblk -p -o NAME,VENDOR,MODEL,SIZE,TYPE,SERIAL`   
-Replace the string `/dev/sda` in `build_and_deploy.sh` with the name of your stick   
-Run `./build_and_deploy.sh`
+Steps:
+- setup your user in configuration.nix:
+- - choose the packages you need;
+- - create the hashed password with `mkpasswd -m sha-512`;
+- blacklist your machine kernel modules:
+- - use `lshw -c network`, `lshw -c communication` to find drivers used for Wi-Fi, Ethernet and Bluetooth;
+- - double check your drivers and who uses them by `lsmod | grep <driver_name>`;
+- - add the ones you found and feel should be blacklisted into hardware-configuration.nix `blacklistedKernelModules` list;
+- find your USB stick with `lsblk`;
+- format the stick if necessary (I usally go with `gparted`);
+- build the configuration and flash your USB `sudo nix run 'github:nix-community/disko/latest#disko-install' -- --flake './#airgapped' --disk main /dev/sda`;
+- Enjoy your new NixOS airgapped live.
+
+
+## Issues ##
+I haven't been able to make it run in a qemu vm, it freezes on "Booting from disk..." and the command show a warning about raw format.   
